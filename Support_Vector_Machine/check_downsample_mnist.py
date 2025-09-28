@@ -34,7 +34,7 @@ print("After Downsampling")
 print("Data shape:", x14.shape, x_test14.shape)
 
 # Show one image
-a = x14[0].reshape((14, 14))
-plt.imshow(a, cmap="gray")
-plt.title(f"Label: {y[0]}")
-plt.show()
+# a = x14[0].reshape((14, 14))
+# plt.imshow(a, cmap="gray")
+# plt.title(f"Label: {y[0]}")
+# plt.show()

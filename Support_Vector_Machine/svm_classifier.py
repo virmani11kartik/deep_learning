@@ -46,7 +46,7 @@ def main():
     print("After Downsample")
     print("Train:", X_train_ds.shape, "Val:", X_test_ds.shape)
 
-    clf = svm.SVC(C=0.3, kernel='rbf', gamma='auto')
+    clf = svm.SVC(C=0.3, kernel='rbf', gamma='scale', verbose=True)
     clf.fit(X_train_ds, y_train)
 
     ## Validation error
