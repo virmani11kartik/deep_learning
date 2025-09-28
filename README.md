@@ -90,10 +90,10 @@ Results are visualized in the `outputs_p3i/` and `Support_Vector_Machine/` folde
 ### SVM with Gabor Filters
 
 **Filter Bank (36 Gabor filters)**  
-![Gabor Filter Bank](Support_Vector_Machine/filter_bank_36.png)
+![Gabor Filter Bank](Support_Vector_Machine/outputs_part_h/gabor_filters_visualization.png)
 
 **Confusion Matrix: Baseline vs Gabor Features**  
-![Gabor vs Baseline Confusion](Support_Vector_Machine/gabor_vs_baseline_confusion.png)
+![Gabor Filter Bank](Support_Vector_Machine/outputs_part_h/gabor_vs_baseline_confusion.png)
 
 
 ## ⚙️ Setup
