@@ -69,6 +69,33 @@ Results are visualized in the `outputs_p3i/` and `Support_Vector_Machine/` folde
 
 ---
 
+## 📊 Results Preview
+
+### Neural Network (NumPy vs PyTorch)
+
+**Validation Loss (NumPy)**  
+![Validation Loss](Basic_Neural_Net/val_loss_vs_updates.png)
+
+**Validation Error (NumPy)**  
+![Validation Error](Basic_Neural_Net/val_error_vs_updates.png)
+
+**PyTorch Training Loss**  
+![PyTorch Train Loss](Basic_Neural_Net/outputs_p3i/train_loss.png)
+
+**PyTorch Validation Error**  
+![PyTorch Val Error](Basic_Neural_Net/outputs_p3i/val_error.png)
+
+---
+
+### SVM with Gabor Filters
+
+**Filter Bank (36 Gabor filters)**  
+![Gabor Filter Bank](Support_Vector_Machine/filter_bank_36.png)
+
+**Confusion Matrix: Baseline vs Gabor Features**  
+![Gabor vs Baseline Confusion](Support_Vector_Machine/gabor_vs_baseline_confusion.png)
+
+
 ## ⚙️ Setup
 
 ```bash
