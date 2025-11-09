@@ -1,0 +1,21 @@
+# Set all motors to same value using array
+ros2 topic pub --rate 10 /motor_control/command std_msgs/msg/UInt16MultiArray "{data: [1150, 1150, 1150, 1150]}"
+
+# Set all motors to 1200
+ros2 topic pub --rate 10 /motor_control/all_motors std_msgs/msg/UInt16 "{data: 1200}"
+
+# Control motor 1 only
+ros2 topic pub --rate 10 /motor_control/motor_1 std_msgs/msg/UInt16 "{data: 1300}"
+
+# Emergency stop all motors immediately
+ros2 topic pub --once /motor_control/emergency_stop std_msgs/msg/Bool "{data: true}"
+
+ros2 topic echo /motor_control/state
+
+
+python scripts/rsl_rl/train_race.py \
+--task Isaac-Quadcopter-Race-v0 \
+--num_envs 8192 \
+--max_iterations 1000 \
+--headless \
+--logger wandb
