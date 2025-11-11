@@ -12,6 +12,8 @@ ros2 topic pub --once /motor_control/emergency_stop std_msgs/msg/Bool "{data: tr
 
 ros2 topic echo /motor_control/state
 
+sudo systemctl status vncserver-x11-serviced.service
+
 
 python scripts/rsl_rl/train_race.py \
 --task Isaac-Quadcopter-Race-v0 \
@@ -19,3 +21,6 @@ python scripts/rsl_rl/train_race.py \
 --max_iterations 1000 \
 --headless \
 --logger wandb
+
+python scripts/rsl_rl/play_race.py --task Isaac-Quadcopter-Race-v0 --num_envs 1 --load_run 2025-11-09_21-14-58 --checkpoint best_model.pt --headless --video --video_length 300
+
