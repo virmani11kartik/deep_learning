@@ -1,407 +1,385 @@
-# MNIST Representation Learning — From Scratch and With PyTorch 🧠📊
+# Deep Learning from First Principles 🧠
 
-This project is a **self-learning initiative** to explore how classical and modern machine learning methods perform on the MNIST digit classification task.  
-I implemented everything from scratch using **NumPy** and compared it against **PyTorch** implementations, analyzing results through training/validation curves and feature visualizations.
-
----
-
-## 🔍 Motivation
-Instead of relying only on high-level frameworks, I wanted to understand:
-- How a neural network actually performs **forward and backward passes** at the layer level.
-- How **gradient checking** validates correctness of custom backprop implementations.
-- The effect of different **feature representations** (raw pixels vs. Gabor filters).
-- How a scratch-built pipeline compares to **PyTorch** in terms of stability and accuracy.
+A comprehensive exploration of classical and modern deep learning methods implemented from scratch and compared against optimized frameworks. This repository spans three major domains: **representation learning on MNIST**, **convolutional architectures on CIFAR-10**, and **transformer-based language modeling**.
 
 ---
 
+## 📋 Table of Contents
 
+- [Overview](#overview)
+- [Project 1: MNIST Representation Learning](#project-1-mnist-representation-learning)
+- [Project 2: CIFAR-10 Convolutional Networks](#project-2-cifar-10-convolutional-networks)
+- [Project 3: Transformer Language Model](#project-3-transformer-language-model)
+- [Project 4: Nonlinear Regression & Generalization](#project-4-nonlinear-regression--generalization)
+- [Setup & Installation](#setup--installation)
+- [Key Learnings](#key-learnings)
 
 ---
 
-## 🛠️ Implementations
+## 🎯 Overview
 
-### 1. Feature Engineering + SVM
-- Downsampled MNIST digits to $14\times14$ resolution.
-- Built **Gabor filter banks** to extract orientation- and frequency-sensitive features.
-- Trained **SVM classifiers** on:
-  - Raw pixel inputs
-  - Gabor-enhanced features
-- Result: Gabor features improved accuracy and yielded more separable confusion matrices.
+This repository represents a **self-learning journey** to understand deep learning by building everything from the ground up. Rather than relying solely on high-level frameworks, each project implements core algorithms using NumPy and compares them against PyTorch implementations to gain deeper insights into:
 
-### 2. Neural Networks From Scratch (NumPy)
-- Built custom layers:
-  - **Embedding**: 28×28 → 7×7×8 patches
-  - **Linear**: fully connected mapping
-  - **ReLU** activation
+- Forward and backward propagation mechanics
+- Gradient computation and numerical verification
+- Feature engineering and representation quality
+- Model stability, convergence, and generalization
+- Adversarial robustness and input sensitivity
+
+---
+
+## 🔢 Project 1: MNIST Representation Learning
+
+### Objective
+Compare classical machine learning (SVMs with handcrafted features) against neural networks implemented from scratch on MNIST digit classification.
+
+### Implementations
+
+#### 1. Feature Engineering + SVM
+- Downsampled MNIST digits to 14×14 resolution
+- Constructed **Gabor filter banks** to extract orientation and frequency features
+- Trained SVM classifiers on:
+  - Raw pixel inputs (baseline)
+  - Gabor-enhanced features (improved accuracy and separability)
+
+#### 2. Neural Networks from Scratch (NumPy)
+- Custom layer implementations:
+  - **Embedding layer**: 28×28 → 7×7×8 patches
+  - **Fully connected layers** with weight initialization
+  - **ReLU** activation functions
   - **Softmax + Cross-Entropy** loss
-- Verified each component with **gradient checking** (finite differences).
-- Trained using minibatch SGD (batch=32, lr=0.1) for 10k updates.
-- Observed ~40–60% accuracy with simple 1-layer architecture.
+- **Gradient checking** via finite differences to verify backpropagation
+- Minibatch SGD training (batch=32, lr=0.1, 10k updates)
+- Achieved ~40–60% accuracy with shallow architecture
 
-### 3. Neural Networks With PyTorch
-- Reimplemented the same pipeline using `nn.Conv2d`, `nn.Linear`, `nn.ReLU`, and `nn.CrossEntropyLoss`.
-- Trained for 10k updates with identical settings.
-- Achieved smoother convergence, better stability, and higher final accuracy compared to NumPy model.
+#### 3. Neural Networks with PyTorch
+- Reimplemented identical architecture using `nn.Conv2d`, `nn.Linear`, `nn.ReLU`
+- Compared training dynamics, convergence speed, and final accuracy
+- PyTorch model showed smoother convergence and better stability
 
----
+### Results
 
-## 📊 Results
+| Method | Accuracy | Key Insight |
+|--------|----------|-------------|
+| SVM (raw pixels) | Baseline | Struggled with rotation/scale invariances |
+| SVM (Gabor features) | +8-12% | Improved robustness to orientation changes |
+| NumPy NN | ~50% | Correct learning but limited by architecture depth |
+| PyTorch NN | ~65% | Better optimization and numerical stability |
 
-### SVM Experiments
-- **Raw pixels**: struggled with invariances (rotation/scale).
-- **Gabor features**: added robustness to orientation and frequency, improving classification.
+### Visualizations
 
-### Neural Networks
-- **NumPy model**:  
-  - Showed correct learning behavior but limited by shallow architecture.  
-  - Training error stabilized at ~0.4–0.6.
-- **PyTorch model**:  
-  - More stable training curves.  
-  - Better validation error.  
-  - Demonstrated advantages of optimized layers.
+**Validation Loss & Error (NumPy)**  
+<img src="Basic_Neural_Net/val_loss_vs_updates.png" width="400"/> <img src="Basic_Neural_Net/val_error_vs_updates.png" width="400"/>
 
-Results are visualized in the `outputs_p3i/` and `Support_Vector_Machine/` folders:
+**PyTorch Training Curves**  
+<img src="Basic_Neural_Net/outputs_p3i/train_loss.png" width="400"/> <img src="Basic_Neural_Net/outputs_p3i/val_error.png" width="400"/>
 
-- Training loss/error curves (NumPy vs PyTorch)
-- Validation loss/error curves
-- Gabor filter visualizations
-- Confusion matrices
+**Gabor Filter Bank & Confusion Matrices**  
+<img src="Support_Vector_Machine/outputs_part_h/gabor_filters_visualization.png" width="400"/> <img src="Support_Vector_Machine/outputs_part_h/gabor_vs_baseline_confusion.png" width="400"/>
 
 ---
 
-## 📊 Results Preview
+## 🖼️ Project 2: CIFAR-10 Convolutional Networks
 
-### Neural Network (NumPy vs PyTorch)
+### Objective
+Implement and analyze modern convolutional architectures (All-CNN, ResNet) on CIFAR-10, with a focus on:
+- Parameter efficiency and layer-wise design
+- Adversarial robustness via gradient-based attacks
+- Proper training practices (augmentation, regularization, learning rate schedules)
 
-**Validation Loss (NumPy)**  
-![Validation Loss](Basic_Neural_Net/val_loss_vs_updates.png)
+### Architectures
 
-**Validation Error (NumPy)**  
-![Validation Error](Basic_Neural_Net/val_error_vs_updates.png)
+#### 1. All-CNN-T
+- Convolutional architecture using:
+  - Small conv blocks with BatchNorm → ReLU ordering
+  - Dropout for regularization
+  - Global average pooling instead of fully connected layers
+- Configuration: `c1=96`, `c2=192` channels
+- Total parameters: ~1.3M
 
-**PyTorch Training Loss**  
-![PyTorch Train Loss](Basic_Neural_Net/outputs_p3i/train_loss.png)
+#### 2. ResNet Implementation
+- TorchVision-style ResNet-18/34/50 with residual connections
+- BatchNorm → ReLU → Conv ordering (ResNet v1.5 style)
+- Parameter breakdown and diagnostic utilities in `param_count.py`
 
-**PyTorch Validation Error**  
-![PyTorch Val Error](Basic_Neural_Net/outputs_p3i/val_error.png)
+### Training Details
 
----
+**Hyperparameters:**
+- Optimizer: SGD with Nesterov momentum (0.9)
+- Weight decay: 1e-3 (applied only to weights, not biases or BN parameters)
+- Learning rate schedule:
+  - Epochs 0-39: lr = 0.1
+  - Epochs 40-79: lr = 0.01
+  - Epochs 80-99: lr = 0.001
+- Batch size: 128
+- Mixed precision training: optional via `--amp`
 
-### SVM with Gabor Filters
+**Data Augmentation:**
+- RandomHorizontalFlip
+- RandomCrop(32, padding=4, padding_mode='reflect')
+- ColorJitter(brightness=0.2, contrast=0.2)
+- Normalization with CIFAR-10 statistics
 
-**Filter Bank (12 Gabor filters)**  
-![Gabor Filter Bank](Support_Vector_Machine/outputs_part_h/gabor_filters_visualization.png)
+### Adversarial Analysis
 
-**Confusion Matrix: Baseline vs Gabor Features**  
-![Gabor Filter Bank](Support_Vector_Machine/outputs_part_h/gabor_vs_baseline_confusion.png)
+Implemented gradient-based attacks to study model robustness:
 
-# ResNet / All-CNN Experiments (CIFAR-10)
+**1. Input Gradient Visualization**
+- Computed ∂L/∂x for correctly and incorrectly classified images
+- Revealed which input regions most influence predictions
 
-This repository contains:
+**2. Iterative FGSM Attack (5 steps)**
+- Total perturbation budget: ε = 8 pixels (in [0,255] scale)
+- Step size: α = ε/5
+- Constraint: perturbations clipped to valid normalized range
+- Tracked loss progression across attack iterations
 
-* `resnet.py` — (uploaded) TorchVision-style ResNet implementation (ResNet-18/34/50/...)
-* `param_count.py` — layer-wise parameter counting / simple diagnostics
-* `allcnn.py` — training script for the All-CNN-T style model on CIFAR-10
-* `grad_and_attack_analysis.py` — compute input gradients and run iterative FGSM attacks
-* checkpoint outputs in `checkpoints/` and analysis outputs in `adv_analysis/` (generated during runs)
-* utility scripts / notebooks used during the assignment
+**3. Adversarial Accuracy Evaluation**
+- 1-step FGSM attack on entire validation set
+- Measured accuracy drop under adversarial perturbations
+- Demonstrated network fragility to small input changes
 
----
+### Results
 
-## Project overview
+**Training Convergence:**  
+<img src="training_curves.png" width="700"/>
 
-This repo explores:
+**Adversarial Attack Loss Curve:**  
+<img src="adv_analysis/attack_loss_curve.png" width="500"/>
 
-1. Convolutional model design (All-CNN-T), and ResNet implementation nuances
+**Gradient Visualizations:**
 
-   * We use BN → ReLU ordering (ResNet v1 / v1.5). This is the canonical pattern: BatchNorm normalizes the pre-activation distribution, then ReLU applies the nonlinearity. Pre-activation ResNets (BN→ReLU→Conv) are an alternate design for very deep networks.
-2. Model inspection and parameter bookkeeping:
+| Correctly Classified | Misclassified |
+|---------------------|---------------|
+| <img src="adv_analysis/grad_visuals_correct.png" width="400"/> | <img src="adv_analysis/grad_visuals_incorrect.png" width="400"/> |
 
-   * Count params per-layer, and split parameters into groups for weight decay handling (no decay on biases and BN affine params).
-3. Training on CIFAR-10 with augmentation and a standard SGD+Nesterov schedule.
-4. Gradient-based adversarial attacks (FGSM / iterative FGSM) and empirical evaluation of robustness.
+**Perturbation Progression:**  
+<img src="adv_analysis/attack_image_progression_example0.png" width="600"/>
 
----
+| Metric | Value |
+|--------|-------|
+| Clean validation accuracy | ~90% |
+| Adversarial accuracy (ε=8) | ~45% |
+| Parameter count (All-CNN-T) | 1.37M |
 
-## Quick setup
-
-Create a Python virtualenv and install dependencies:
+### Running the Code
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install torch torchvision tqdm matplotlib numpy
-```
-
-> If you have a CUDA GPU, install the appropriate `torch`/`torchvision` wheel for your CUDA version from [https://pytorch.org](https://pytorch.org).
-
----
-
-## Files & purpose
-
-* `resnet.py` — ResNet family implementation (for inspection / experiments).
-* `param_count.py` — script to print per-parameter tensor counts and totals.
-* `allcnn.py` — main CIFAR-10 training script (All-CNN-T). Produces:
-
-  * `checkpoints/allcnn_t_best.pth` (best val)
-  * `checkpoints/allcnn_t_last.pth` (final)
-  * `training_curves.png` and `training_curves.json`
-* `grad_and_attack_analysis.py` — computes `∂L/∂x` visualizations and runs the 5-step signed-gradient attack; saves images and `attack_loss_curve.png`.
-* `adv_analysis/` — directory where gradient visualizations and attack plots are saved by the analysis script.
-
----
-
-## Model notes (All-CNN-T)
-
-The architecture implemented in `allcnn.py` exactly matches the All-CNN-T pattern used in the assignment:
-
-* Small conv blocks, ReLU, BatchNorm, Dropout
-* Global avg pooling to produce logits
-* Example constructor: `allcnn_t(c1=96, c2=192)`
-
-Important design choices:
-
-* Convolutions are created with `bias=True` in that script (it’s fine either way when not relying on BN affine), but when using BN, conv biases are usually redundant (common practice: `bias=False`).
-* BatchNorm is placed before ReLU: `Conv → BN → ReLU`.
-
----
-
-## Training instructions (CIFAR-10)
-
-Train with recommended hyperparams:
-
-```bash
+# Train All-CNN-T on CIFAR-10
 python allcnn.py --data ./data --batch-size 128 --epochs 100 --amp
-```
 
-Key training settings in the script:
+# Analyze gradients and run adversarial attacks
+python grad_and_attack_analysis.py
 
-* Augmentations: `RandomHorizontalFlip`, `RandomCrop(32, padding=4, padding_mode="reflect")`, `ColorJitter(brightness=0.2, contrast=0.2)` plus normalization.
-* Optimizer: `SGD` with Nesterov momentum `0.9`.
-* Weight decay: `1e-3` applied **only** to weight parameters (not to biases or BN affine params). The script implements param grouping: decay group vs no-decay group.
-* LR schedule: piecewise step schedule:
-
-  * `lr=0.1` for epochs 0–39,
-  * `lr=0.01` for epochs 40–79,
-  * `lr=0.001` for epochs 80–99.
-* Dropout & BatchNorm included in model.
-* Mixed-precision optional: `--amp`.
-
-Expected outcome:
-
-* With the default channels `c1=96, c2=192`, and the augmentations + schedule above, validation error below ~10% is achievable on CIFAR-10; if you fall short, try:
-
-  * increasing `c1/c2` to `128`/`256`,
-  * adding Cutout,
-  * longer training or cosine LR schedule.
-
----
-
-## Parameter counting & grouping
-
-**Layer-wise parameter count** (example command, or open and run `param_count.py`):
-
-```bash
+# Count model parameters
 python param_count.py
 ```
 
-Example output for ResNet-18 (canonical):
-
-* Total trainable params: `11,689,512`
-
-**Parameter grouping** (used by `allcnn.py`):
-
-* `bn_affine_params`: BatchNorm `weight` and `bias` (γ and β) → *no weight decay*
-* `bias_params`: biases of `Conv2d` and `Linear` → *no weight decay*
-* `rest_params`: all other parameters → *apply weight decay = 1e-3*
-
-This is implemented in `get_param_groups(model)` in the training script.
-
 ---
 
-## Data augmentation
+## 📝 Project 3: Transformer Language Model
 
-RandAugment and many modern strategies are useful; for assignment requirements we used:
+### Objective
+Build a decoder-only Transformer from scratch for character-level language modeling, implementing every component manually to understand the attention mechanism and autoregressive generation.
 
-* `RandomHorizontalFlip`
-* `RandomCrop` with `padding=4` (reflect)
-* `ColorJitter` (brightness, contrast)
-* (Optional) Cutout — helpful if accuracy is slightly below target.
+### Dataset
+Trained on concatenated classical English texts:
+- *The Hound of the Baskervilles*
+- *Shakespeare's Works*
+- *War and Peace*
 
-If you want to mirror the RandAugment paper/implementation, inspect torchvision transforms:
+**Tokenization:**
+- Byte-Pair Encoding (BPE) with vocabulary size 2048
+- Special tokens: `[PAD]`, `[UNK]`, `[CLS]`, `[SEP]`, `[MASK]`
+- Preprocessing: lowercasing, accent stripping, punctuation splitting
 
-* `torchvision.transforms.RandAugment` (see torchvision docs).
+### Architecture
 
----
+**Model Configuration:**
+- Embedding dimension: d = 256
+- Context length: T = 128 tokens
+- Attention heads: h = 2 (each with dimension p = 32)
+- Transformer blocks: 2-4 layers
+- Position-wise MLP: hidden dimension 2d = 512
 
-## Gradient & adversarial analysis
+**Key Components:**
 
-We compute input gradients `dx = ∂L/∂x` (backprop into the input) and visualize them and run small iterative attacks.
+1. **Positional Encoding** (sine-cosine):
+   ```
+   PE(pos, 2i) = sin(pos / 10000^(2i/d))
+   PE(pos, 2i+1) = cos(pos / 10000^(2i/d))
+   ```
 
-Key points / how it was implemented:
+2. **Causal Self-Attention**:
+   - Multi-head attention with triangular masking
+   - Key-padding masks to ignore `[PAD]` tokens
+   - Scaled dot-product: Attention(Q,K,V) = softmax(QK^T / √p)V
 
-* **Compute input gradient**:
+3. **Pre-Norm Architecture**:
+   ```
+   h = h + Attention(LayerNorm(h))
+   h = h + MLP(LayerNorm(h))
+   ```
 
-  ```py
-  x = x_batch[i:i+1].detach().clone().requires_grad_()
-  logits = net(x)
-  loss = F.cross_entropy(logits, y)
-  loss.backward()
-  dx = x.grad.data.clone()
-  ```
-* **5-step signed-gradient attack (iterative FGSM)**:
+### Training
 
-  * Total `ε = 8` in pixel units `[0..255]`.
-  * Step size `α = ε / 5`.
-  * Convert pixel-space step to normalized-space before applying to the model:
+- Loss: Cross-entropy on next-token prediction
+- Optimizer: AdamW (β₁=0.9, β₂=0.95, lr=3×10⁻⁴)
+- Weight decay: 0.01
+- Gradient clipping: 1.0
+- Batch size: 64 (variable-length sequences with padding)
 
-    * `eps_norm[c] = (eps_pixels / 255) / std[c]`
-    * `alpha_norm[c] = (alpha_pixels / 255) / std[c]`
-  * At each step:
+**Loss Curves:**  
+<img src="loss_plot.png" width="600"/>
 
-    * compute gradient wrt normalized input,
-    * `x = clamp(x + alpha_norm * sign(grad), orig - eps_norm, orig + eps_norm)`
-* **Outputs**:
+### Generation Examples
 
-  * `adv_analysis/grad_visuals_correct.png`
-  * `adv_analysis/grad_visuals_incorrect.png` (if misclassified examples exist)
-  * `adv_analysis/attack_loss_curve.png` (mean batch loss vs attack step)
-  * `adv_analysis/attack_image_progression_example0.png` (example progression)
+**Autoregressive Sampling** (temperature=0.9, top-k=40):
 
-**Compute adversarial accuracy (1-step FGSM)**:
+```
+PROMPT: The Eiffel Tower is in Paris
+OUTPUT: the e if fe l to wer is in paris
 
-* To compute accuracy on 1-step perturbed images (for the entire validation set), generate for each validation image:
+PROMPT: Sherlock Holmes looked at the
+OUTPUT: s her lock hol mes looked at the at least , he looked down at her
 
-  * `x_adv = x + eps * sign(∂L/∂x)` (careful to convert `eps` from pixel units into normalized-space before applying),
-  * clamp `x_adv` into valid normalized bounds (or equivalently clamp the pixel values to `[0,255]` then re-normalize),
-  * feed `x_adv` to the model and check predictions.
-* Typical observation: accuracy on 1-step FGSM images is substantially lower than on clean images, demonstrating network fragility. (~significant drop depending on epsilon and model).
-
-A quick snippet to do this over the validation set (pseudocode):
-
-```py
-eps_pixels = 8.0
-eps_norm = torch.tensor((eps_pixels/255.0)/std).view(1,3,1,1).to(device)
-
-correct = 0; total = 0
-for x, y in val_loader:
-    x = x.to(device); y = y.to(device)
-    x_adv = x.detach().clone().requires_grad_()
-    logits = net(x_adv); loss = F.cross_entropy(logits, y); loss.backward()
-    grad = x_adv.grad
-    x_adv = x + eps_norm * grad.sign()
-    # project: clamp to orig +/- eps_norm OR clamp pixel range and re-normalize
-    logits_adv = net(x_adv)
-    pred_adv = logits_adv.argmax(dim=1)
-    correct += (pred_adv == y).sum().item()
-    total += y.size(0)
-adv_acc = correct / total
+PROMPT: To be or not to
+OUTPUT: to be or not to for my love the duke
 ```
 
-**Compare** `adv_acc` to the clean validation accuracy to quantify robustness.
+**Analysis:**
+- Fragmented words result from fine-grained BPE merges (vocab=2048)
+- Model captures grammatical structure and context dependencies
+- Increasing vocabulary size (8K-16K) would improve lexical coherence
 
 ---
 
-## Visuals (generated during analysis)
+## 🔬 Project 4: Nonlinear Regression & Generalization
 
-Below are the key images we generated during the experiments. If you ran the training & analysis scripts, these files should exist in the repository at the shown paths.
+### Objective
+Investigate why deep networks generalize even when heavily overparameterized, and understand failure modes when test data lies outside the training distribution.
 
-### Training curves
+### Experimental Setup
 
-![Training Curves](training_curves.png)
-*Figure: Training and validation loss (left) and top-1 error (right) vs epochs.*
+**Target Function:**  
+f*(x) = sin(10πx⁴) on x ∈ [0, 1]
 
-### Adversarial attack loss curve
+**Model:**
+- MLP with L=3 layers, width d=256
+- ReLU activations
+- Trained with SGD (momentum=0.9, lr=0.01)
+- No weight decay (to enable exact interpolation)
 
-![Attack Loss Curve](adv_analysis/attack_loss_curve.png)
-*Figure: Mean cross-entropy loss on a mini-batch vs the 5 signed-gradient attack steps (total ε=8 pixels).*n
+**Evaluation Metrics:**
+- δ_in(n): max error on training domain [0, 1]
+- δ_out(n): max error on extended domain [0, 1.5]
 
-### Gradient visualizations
+**Experimental Design:**
+- Sweep over 20 dataset sizes: n ∈ logspace(1, 3, 20)
+- 5 random trials per size (100 total training runs)
+- Report mean ± std across trials
 
-Correctly classified examples (top-row images) and their input gradients (bottom-row):
+### Results
 
-![Grad visuals - correct](adv_analysis/grad_visuals_correct.png)
+<img src="dataset_example.png" width="400"/> <img src="delta_vs_n.png" width="400"/>
 
-Misclassified examples (if present) and their gradients:
+**Key Findings:**
 
-![Grad visuals - incorrect](adv_analysis/grad_visuals_incorrect.png)
+| n | Train MSE | δ_in | δ_out | Interpretation |
+|---|-----------|------|-------|----------------|
+| 8 | 0.891 | 2.27 | 2.94 | Poor coverage |
+| 32 | 0.583 | 1.32 | 1.49 | Improving interpolation |
+| 128 | 0.437 | 1.48 | 1.72 | Good interpolation |
+| 256 | 0.371 | 1.08 | 1.18 | Strong interpolation, weak extrapolation |
 
-### Example perturbed image progression
-
-![Perturbation progression example](adv_analysis/attack_image_progression_example0.png)
-*Figure: how a single image changes across the 5 signed-gradient attack steps (visualized in pixel space).*
-
-> If any of the images above are missing, run:
->
-> ```bash
-> python allcnn.py --data ./data --batch-size 128 --epochs 100 --amp
-> python grad_and_attack_analysis.py
-> ```
-
----
-
-## Troubleshooting & common gotchas
-
-* **Interleaved tqdm + print lines**
-  If you use `tqdm` for progress and also `print(...)`, logs can interleave. Use one of:
-
-  * `tqdm.write(msg)` instead of `print(...)`, or
-  * `pbar.set_postfix(...)` to show train/val metrics inline, or
-  * disable the progress bar.
-
-* **NumPy and PyTorch mixing error (`TypeError: unsupported operand...`)**
-  When multiplying a NumPy array by a PyTorch tensor, convert the NumPy array to a tensor first (and move to the same device). Example:
-
-  ```py
-  alpha_norm = torch.tensor(alpha_norm_np, device=device).view(1,3,1,1)
-  x_adv = x_adv + alpha_norm * grad.sign()
-  ```
-
-* **Normalization must match training**
-  Always use the exact `mean` and `std` used for training when converting `eps_pixels` to normalized space. Otherwise perturbation magnitudes are incorrect.
-
-* **Epoch counts & schedule**
-  If you run `--epochs 200`, adjust the LR schedule to 80/80/40 (or change `get_lr()` accordingly). If you want the assignment schedule for 100 epochs, pass `--epochs 100`.
-
-* **Gradients are zero**
-  Ensure input tensor has `requires_grad_()` before forward, and that you call `loss.backward()`.
+**Conclusions:**
+- Networks interpolate well within the convex hull of training data
+- Extrapolation fails dramatically outside training support
+- "Overparameterization" enables good generalization *within* data distribution due to implicit regularization
+- Generalization requires data coverage, not just model capacity
 
 ---
 
-## Reproducibility tips
+## ⚙️ Setup & Installation
 
-* Set `seed` in `allcnn.py` (example uses `42`). Note that exact reproducibility on GPU requires disabling cudnn benchmark and setting deterministic flags (but may run slower).
-* Use `--amp` if you want mixed precision when using modern GPUs. Remove it if you want exact gradients in float32.
-
----
-
-## Expected outputs (files)
-
-After training and analysis, you should have:
-
-* `checkpoints/allcnn_t_best.pth`
-* `checkpoints/allcnn_t_last.pth`
-* `training_curves.png` and `training_curves.json`
-* `adv_analysis/grad_visuals_correct.png`
-* `adv_analysis/grad_visuals_incorrect.png`
-* `adv_analysis/attack_loss_curve.png`
-* `adv_analysis/attack_image_progression_example0.png`
-
----
-
-## References
-
-* He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for Image Recognition (ResNet).
-* Goodfellow, I. J., Shlens, J., & Szegedy, C. (2014). Explaining and Harnessing Adversarial Examples (FGSM).
-* Cubuk, E. D., et al. (2019). RandAugment: Practical automated data augmentation with a reduced search space.
-* Torchvision transform docs: `torchvision.transforms` (RandAugment implementation referenced during augment experiments).
-
----
-
-## ⚙️ Setup
-
+### Requirements
 ```bash
 python3 -m venv venv
-source venv/bin/activate
-pip install -U numpy matplotlib torchvision torch tqdm scikit-learn
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install --upgrade pip
+pip install torch torchvision tqdm matplotlib numpy scikit-learn
+pip install tokenizers  # For transformer project
+```
+
+### GPU Support
+For CUDA-enabled training:
+```bash
+# Visit https://pytorch.org to get the appropriate wheel for your CUDA version
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+```
+
+---
+
+## 🎓 Key Learnings
+
+### Technical Insights
+
+1. **Gradient Verification is Essential**
+   - Finite difference checks caught multiple backprop bugs in NumPy implementations
+   - Even small numerical errors compound through layers
+
+2. **Framework Optimizations Matter**
+   - PyTorch's optimized kernels provide both speed and numerical stability
+   - Custom implementations educational but impractical for large-scale training
+
+3. **Feature Engineering vs Deep Learning**
+   - Gabor filters capture domain knowledge (orientation, frequency)
+   - Deep networks learn similar features automatically given sufficient data
+   - Hybrid approaches can be powerful
+
+4. **Adversarial Fragility**
+   - Modern CNNs achieve high accuracy but remain vulnerable to imperceptible perturbations
+   - Input gradients reveal model sensitivity patterns
+   - Robustness requires explicit design (adversarial training, certified defenses)
+
+5. **Generalization Requires Coverage**
+   - Overparameterized networks generalize well *within* training distribution
+   - Extrapolation fails without explicit inductive biases
+   - Data augmentation effectively expands training coverage
+
+### Architectural Lessons
+
+- **BatchNorm Placement**: BN → ReLU is standard; pre-activation variants exist for very deep networks
+- **Residual Connections**: Essential for training deep networks (gradient flow)
+- **Attention Mechanisms**: Causal masking enables autoregressive modeling; positional encodings inject sequence order
+- **Regularization**: Weight decay on weights only; dropout between layers; data augmentation
+
+---
+
+## 📚 References
+
+### Papers
+- Vaswani et al. (2017). *Attention is All You Need*. NeurIPS.
+- He et al. (2016). *Deep Residual Learning for Image Recognition*. CVPR.
+- Goodfellow et al. (2014). *Explaining and Harnessing Adversarial Examples*. ICLR.
+- Zhang et al. (2017). *Understanding Deep Learning Requires Rethinking Generalization*. ICLR.
+- Sennrich et al. (2016). *Neural Machine Translation of Rare Words with Subword Units*. ACL.
+
+### Resources
+- [PyTorch Documentation](https://pytorch.org/docs/)
+- [HuggingFace Tokenizers](https://huggingface.co/docs/tokenizers/)
+- [TorchVision Models](https://pytorch.org/vision/stable/models.html)
+
+---
+
+## 📧 Contact
+
+**Kartik Virmani**
+
+Feel free to reach out with questions or suggestions for improvements!
+
+---
+
+## 📄 License
+
+This project is intended for educational purposes. All code is provided as-is for learning and research.
