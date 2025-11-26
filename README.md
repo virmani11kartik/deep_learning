@@ -230,7 +230,7 @@ Trained on concatenated classical English texts:
 - Batch size: 64 (variable-length sequences with padding)
 
 **Loss Curves:**  
-<img src="loss_plot.png" width="600"/>
+<img src="LLM/loss_plot.png" width="600"/>
 
 ### Generation Examples
 
@@ -281,7 +281,7 @@ f*(x) = sin(10πx⁴) on x ∈ [0, 1]
 
 ### Results
 
-<img src="dataset_example.png" width="400"/> <img src="delta_vs_n.png" width="400"/>
+<img src="NLRegression/dataset_example.png" width="400"/> <img src="NLRegression/delta_vs_n.png" width="400"/>
 
 **Key Findings:**
 
