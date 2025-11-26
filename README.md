@@ -144,9 +144,6 @@ Implemented gradient-based attacks to study model robustness:
 **Training Convergence:**  
 <img src="training_curves.png" width="700"/>
 
-**Adversarial Attack Loss Curve:**  
-<img src="adv_analysis/attack_loss_curve.png" width="500"/>
-
 **Gradient Visualizations:**
 
 | Correctly Classified | Misclassified |
@@ -154,7 +151,7 @@ Implemented gradient-based attacks to study model robustness:
 | <img src="adv_analysis/grad_visuals_correct.png" width="400"/> | <img src="adv_analysis/grad_visuals_incorrect.png" width="400"/> |
 
 **Perturbation Progression:**  
-<img src="adv_analysis/attack_image_progression_example0.png" width="600"/>
+<img src="ResNet/augmentations_grid.png" width="600"/>
 
 | Metric | Value |
 |--------|-------|
