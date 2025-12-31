@@ -437,7 +437,7 @@ The two ELBO components were logged **separately** as a function of optimizer up
 - Reconstruction log-likelihood
 - KL divergence to the prior
 
-![ELBO Terms vs Updates](VAE/train.png)
+![ELBO Terms vs Updates](generative_models/train.png)
 
 ---
 
@@ -445,7 +445,7 @@ The two ELBO components were logged **separately** as a function of optimizer up
 - Training reconstruction log-likelihood logged **after every weight update**
 - Validation log-likelihood computed on **100 validation images every 100 updates**
 
-![Train vs Validation Log-Likelihood](VAE/ll.png)
+![Train vs Validation Log-Likelihood](generative_models/ll.png)
 
 ---
 
@@ -454,7 +454,7 @@ The two ELBO components were logged **separately** as a function of optimizer up
 Eight MNIST images passed through the encoder and decoder.  
 Each row shows the **original image (left)** and the **reconstructed output (right)**.
 
-![VAE Reconstructions](VAE/ouput.png)
+![VAE Reconstructions](generative_models/ouput.png)
 
 ---
 
@@ -466,10 +466,163 @@ z \sim \mathcal{N}(0, I_8)
 \]
 and decoding with the trained decoder.
 
-![Generated Samples](VAE/sampled.png)
+![Generated Samples](generative_models/sampled.png)
 
 - Samples generated in mini-batches via a single decoder forward pass
 - Decoder outputs Bernoulli probabilities (optionally thresholded)
+
+---
+
+---
+
+## 🌫️ Project 5: Diffusion Models (DDPM) for MNIST Image Generation
+
+### Objective
+Implement a **Denoising Diffusion Probabilistic Model (DDPM)** from scratch to generate MNIST digits and study iterative generative modeling via noise removal.
+
+This project builds directly on the VAE generative modeling exercise and addresses key VAE limitations such as blurry samples and latent bottlenecks by learning an **iterative denoising process in image space**.
+
+---
+
+### Dataset & Preprocessing
+
+- Dataset: **MNIST**
+- Image resolution: **28×28**
+- Preprocessing:
+  - Converted to tensors in \([0,1]\)
+  - Rescaled to \([-1,1]\) for diffusion stability
+- No binarization (diffusion operates on continuous values)
+
+---
+
+### Forward Process (Noising)
+
+A fixed forward diffusion process gradually corrupts images with Gaussian noise:
+
+\[
+x_t = \sqrt{\bar{\alpha}_t} \, x_0 + \sqrt{1 - \bar{\alpha}_t} \, \epsilon,
+\quad \epsilon \sim \mathcal{N}(0, I)
+\]
+
+- Linear \(\beta_t\) schedule
+- \(T = 200\)–\(1000\) diffusion steps
+- As \(t \to T\), \(x_t \to \mathcal{N}(0,I)\)
+
+**Forward noising visualization:**
+![Forward Noising Process](generative_models/noising.png)
+
+---
+
+### Reverse Process (Denoising)
+
+The generative model learns the reverse transition by predicting the noise added at each step:
+
+\[
+\epsilon_\theta(x_t, t) \approx \epsilon
+\]
+
+- Model: **UNet-based architecture**
+- Inputs: noisy image \(x_t\) and timestep \(t\)
+- Output: predicted noise \(\hat{\epsilon}\)
+- Loss:
+\[
+\mathcal{L} = \mathbb{E}\left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2\right]
+\]
+
+This formulation is equivalent to denoising score matching and yields stable training.
+
+---
+
+### Model Architecture
+
+- Backbone: **Lightweight UNet (MNIST-scale)**
+- Key components:
+  - Downsampling and upsampling paths with skip connections
+  - Residual convolutional blocks
+  - Sinusoidal timestep embeddings injected at multiple layers
+- Output: noise prediction with same shape as input image
+
+---
+
+### Training Dynamics
+
+- Optimizer: AdamW
+- Objective: MSE noise prediction loss
+- Training performed on noised MNIST images at random timesteps
+
+**Training loss curve:**
+![DDPM Training Loss](generative_models/loss_plot.png)
+
+The loss decreases smoothly, indicating successful learning of the denoising task across noise levels.
+
+---
+
+### Sampling from the Model
+
+Generation starts from pure Gaussian noise:
+
+\[
+x_T \sim \mathcal{N}(0, I)
+\]
+
+The model iteratively denoises the image using the learned reverse process until \(x_0\) is obtained.
+
+**Final generated samples:**
+![DDPM Generated Samples](generative_models/ddpm_sample.png)
+
+---
+
+### Denoising Trajectory Visualization
+
+To better understand the generative process, intermediate denoising steps were captured during sampling.
+
+**Denoising progression from noise to digit:**
+![Denoising Steps](generative_models/denoising.png)
+
+This visualization clearly shows structure emerging gradually from noise.
+
+---
+
+### Key Observations
+
+- The forward process successfully maps data to near-pure Gaussian noise
+- The UNet learns to denoise images across all noise levels
+- Samples are sharper and more diverse than VAE-generated digits
+- Generation is slower than VAEs but produces higher-quality results
+- Diffusion models eliminate the need for a latent bottleneck
+
+---
+
+### Files (Project 5)
+
+- `diffusion.py` — Noise scheduler and forward diffusion
+- `unet.py` — UNet denoising model
+- `train_ddpm.py` — Training loop and loss logging
+- `sampling.py` — Reverse diffusion and visualization
+- `outputs/`
+  - `loss_plot.png`
+  - `ddpm_sample.png`
+  - `denoising.png`
+  - `noising.png`
+
+---
+
+### Comparison with VAE (Project 4)
+
+| Aspect | VAE | Diffusion |
+|------|-----|-----------|
+| Latent space | Explicit | None |
+| Generation | One-shot | Iterative |
+| Sample quality | Moderate | High |
+| Training stability | Good | Excellent |
+| Likelihood | Approximate | Variational |
+| Sampling speed | Fast | Slow |
+
+---
+
+### Conclusion
+
+This project demonstrates how diffusion models provide a powerful and stable framework for generative modeling by transforming generation into a sequence of denoising steps. Compared to VAEs, diffusion models achieve superior sample quality at the cost of increased sampling time, making them a strong baseline for modern image generation tasks.
 
 ---
 
