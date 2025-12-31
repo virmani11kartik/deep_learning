@@ -53,22 +53,6 @@ class DiffusionNoiseScheduler:
         plt.tight_layout()
         plt.show()
 
-# Example usage
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-scheduler = DiffusionNoiseScheduler(T=1000,device=device) # Corrected T from 200 to 1000
-x0, _ = next(iter(train_loader))
-x0 = x0.to(device)
-t=scheduler.sample_timesteps(x0.size(0))
-xt, eps = scheduler.q_sample(x0, t)
-DiffusionNoiseScheduler.show_noising_progress(scheduler, x0[:1].to(device))
-with torch.no_grad():
-    t = torch.tensor([scheduler.T - 1], device=device)
-    xt, _ = scheduler.q_sample(x0[0:1].to(device), t)
-    print("mean:", xt.mean().item(), "std:", xt.std().item())
-    print("alpha_bar[T-1] =", scheduler.alpha_bars[-1].item())
-    noise = torch.randn_like(xt)
-    print("noise mean:", noise.mean().item(), "noise std:", noise.std().item())
-
 
 def sinusoidal_time_embedding(timesteps, dim, max_period=10000):
     half=dim//2
@@ -180,6 +164,48 @@ class UNet(nn.Module):
             n+=1
             epoch_losses.append(loss.item())
         return total/max(n,1), epoch_losses
+    
+    def train_flowmatch_epoch(model, loader, opt, device, T_embed=1000):
+        model.train()
+        losses = []
+        for x1, _ in loader:
+            x1 = x1.to(device)                      
+            B = x1.size(0)
+            x0 = torch.randn_like(x1)              # noise prior
+            t = torch.rand(B, device=device)        # [B] continuous
+            # linear interpolation x(t)
+            t_img = t.view(B, 1, 1, 1)
+            xt = (1.0 - t_img) * x0 + t_img * x1
+            # target velocity
+            v_target = x1 - x0
+            # integer timestep for embedding reuse
+            ti = (t * (T_embed - 1)).long()
+            v_pred = model(xt, ti)                 # [B,1,28,28]
+            loss = F.mse_loss(v_pred, v_target)
+            opt.zero_grad(set_to_none=True)
+            loss.backward()
+            opt.step()
+            losses.append(loss.item())
+
+        return losses
+
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+scheduler = DiffusionNoiseScheduler(T=1000,device=device) # Corrected T from 200 to 1000
+
+# Uncomment the following block to test the DiffusionNoiseScheduler
+# x0, _ = next(iter(train_loader))
+# x0 = x0.to(device)
+# t=scheduler.sample_timesteps(x0.size(0))
+# xt, eps = scheduler.q_sample(x0, t)
+# DiffusionNoiseScheduler.show_noising_progress(scheduler, x0[:1].to(device))
+# with torch.no_grad():
+#     t = torch.tensor([scheduler.T - 1], device=device)
+#     xt, _ = scheduler.q_sample(x0[0:1].to(device), t)
+#     print("mean:", xt.mean().item(), "std:", xt.std().item())
+#     print("alpha_bar[T-1] =", scheduler.alpha_bars[-1].item())
+#     noise = torch.randn_like(xt)
+#     print("noise mean:", noise.mean().item(), "noise std:", noise.std().item())
 
 all_losses = []
 steps = []
@@ -188,23 +214,46 @@ epochs = 20
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = UNet(in_ch=1, base_ch=64, t_dim=128).to(device)
 opt = torch.optim.Adam(model.parameters(), lr=2e-4, weight_decay=1e-4)
-for epoch in trange(epochs):
-    loss, epoch_losses = UNet.train_ddpm_epoch(model, train_loader, scheduler, opt, device)
+
+############################## DDPM TRAINING ##############################
+# Uncomment the following block to train using DDPM
+# for epoch in trange(epochs):
+#     loss, epoch_losses = UNet.train_ddpm_epoch(model, train_loader, scheduler, opt, device)
+#     for l in epoch_losses:
+#         step += 1
+#         all_losses.append(l)
+#         steps.append(step)
+#     print(f"Epoch {epoch}, Loss: {loss:.4f}")
+
+# plt.figure(figsize=(7,4))
+# plt.plot(steps, all_losses, linewidth=1)
+# plt.xlabel("Weight updates")
+# plt.ylabel("MSE noise prediction loss")
+# plt.title("DDPM Training Loss Curve")
+# plt.grid(True, alpha=0.3)
+# plt.tight_layout()
+# plt.show()
+
+############################## FLOW MATCHING TRAINING ##############################
+# Uncomment the following block to train using Flow Matching
+for ep in trange(epochs):
+    epoch_losses = UNet.train_flowmatch_epoch(model, train_loader, opt, device, T_embed=1000)
     for l in epoch_losses:
         step += 1
         all_losses.append(l)
         steps.append(step)
-    print(f"Epoch {epoch}, Loss: {loss:.4f}")
+    print(f"epoch {ep+1:02d} | last loss={epoch_losses[-1]:.6f}")
 
 plt.figure(figsize=(7,4))
 plt.plot(steps, all_losses, linewidth=1)
 plt.xlabel("Weight updates")
-plt.ylabel("MSE noise prediction loss")
-plt.title("DDPM Training Loss Curve")
+plt.ylabel("Flow Matching MSE (velocity)")
+plt.title("Flow Matching Training Loss")
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
 
+############################## DDPM SAMPLING ##############################
 @torch.no_grad()
 def ddpm_sample(model, sched, n=1, capture_ts=(999, 800, 600, 400, 200, 100, 0), device=None):
     model.eval()
@@ -286,3 +335,73 @@ samples, snaps = ddpm_sample(model, scheduler, n=1, capture_ts=capture_ts, devic
 show_ddpm_samples(samples, title="DDPM Generated Samples")
 plot_denoising_steps(snaps, capture_ts)
 plot_denoising_grid(snaps, capture_ts, n_show=8)
+
+############################## FLOW MATCHING SAMPLING ##############################
+@torch.no_grad()
+def flowmatch_sample_euler(model, n=16, steps=50, device=None, T_embed=1000):
+    model.eval()
+    device = device or next(model.parameters()).device
+    x = torch.randn(n, 1, 28, 28, device=device)  # x(0) ~ N(0,I)
+    for k in range(steps):
+        t = torch.full((n,), k / steps, device=device)      # [0,1)
+        ti = (t * (T_embed - 1)).long()
+        v = model(x, ti)
+        dt = 1.0 / steps
+        x = x + dt * v
+    return x
+
+@torch.no_grad()
+def flowmatch_sample_heun(model, n=16, steps=50, device=None, T_embed=1000, capture_ts=None):
+    model.eval()
+    device = device or next(model.parameters()).device
+    x = torch.randn(n, 1, 28, 28, device=device)
+    snaps = {} if capture_ts is not None else None
+    capture_set = set(capture_ts) if capture_ts is not None else set()
+    for k in range(steps):
+        t = torch.full((n,), k / steps, device=device)
+        ti = (t * (T_embed - 1)).long()
+        v1 = model(x, ti)
+        dt = 1.0 / steps
+        x_euler = x + dt * v1
+        t2 = torch.full((n,), (k + 1) / steps, device=device).clamp(max=1.0)
+        ti2 = (t2 * (T_embed - 1)).long()
+        v2 = model(x_euler, ti2)
+        x = x + dt * 0.5 * (v1 + v2)
+        if snaps is not None and k in capture_set:
+            snaps[k] = x.detach().clone()
+    return (x, snaps) if snaps is not None else (x, None)
+
+def to_display(x):
+    x = x.clamp(-1, 1)
+    return ((x + 1) * 0.5).cpu().numpy()  # [0,1]
+
+def show_samples_grid(x, title="Flow Matching Samples"):
+    imgs = to_display(x)
+    N = imgs.shape[0]
+    cols = int(np.ceil(np.sqrt(N)))
+    rows = int(np.ceil(N / cols))
+    plt.figure(figsize=(cols*2, rows*2))
+    for i in range(rows*cols):
+        ax = plt.subplot(rows, cols, i+1)
+        ax.axis("off")
+        if i < N:
+            ax.imshow(imgs[i,0], cmap="gray", vmin=0, vmax=1)
+    plt.suptitle(title)
+    plt.tight_layout()
+    plt.show()
+
+# Final samples
+x_gen = flowmatch_sample_euler(model, n=25, steps=50, device=device, T_embed=1000)
+show_samples_grid(x_gen, title="Flow Matching (Euler) Samples")
+
+# capture a few steps
+capture_steps = [0, 5, 10, 20, 30, 40, 49]
+x_final, snaps = flowmatch_sample_heun(model, n=8, steps=50, device=device, T_embed=1000, capture_ts=capture_steps)
+plt.figure(figsize=(2*len(capture_steps), 2))
+for i, k in enumerate(capture_steps):
+    ax = plt.subplot(1, len(capture_steps), i+1)
+    ax.axis("off")
+    ax.imshow(to_display(snaps[k][0:1])[0,0], cmap="gray", vmin=0, vmax=1)
+    ax.set_title(f"step {k}")
+plt.tight_layout()
+plt.show()
