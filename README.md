@@ -11,6 +11,7 @@ A comprehensive exploration of classical and modern deep learning methods implem
 - [Project 2: CIFAR-10 Convolutional Networks](#project-2-cifar-10-convolutional-networks)
 - [Project 3: Transformer Language Model](#project-3-transformer-language-model)
 - [Project 4: Variational Autoencoder for MNIST](#project-4-variational-autoencoder-for-mnist)
+- [Project 5: Denoising Diffusion Probabilistic Modelling for MNIST](#project-5-diffusion-policy-for-mnist)
 - [Setup & Installation](#setup--installation)
 - [Key Learnings](#key-learnings)
 
@@ -141,14 +142,14 @@ Implemented gradient-based attacks to study model robustness:
 
 ### Results
 
-**Training Convergence:**  
-<img src="training_curves.png" width="700"/>
+<!-- **Training Convergence:**  
+<!-- <img src="training_curves.png" width="700"/> -->
 
-**Gradient Visualizations:**
+<!-- **Gradient Visualizations:** -->
 
-| Correctly Classified | Misclassified |
+<!-- | Correctly Classified | Misclassified |
 |---------------------|---------------|
-| <img src="adv_analysis/grad_visuals_correct.png" width="400"/> | <img src="adv_analysis/grad_visuals_incorrect.png" width="400"/> |
+| <img src="adv_analysis/grad_visuals_correct.png" width="400"/> | <img src="adv_analysis/grad_visuals_incorrect.png" width="400"/> | --> -->
 
 **Perturbation Progression:**  
 <img src="ResNet/augmentations_grid.png" width="600"/>
@@ -649,6 +650,7 @@ This project demonstrates how diffusion models provide a powerful and stable fra
 - [PyTorch Documentation](https://pytorch.org/docs/)
 - [HuggingFace Tokenizers](https://huggingface.co/docs/tokenizers/)
 - [TorchVision Models](https://pytorch.org/vision/stable/models.html)
+- [DDPM Paper](https://doi.org/10.48550/arXiv.2006.11239)
 
 ---
 
